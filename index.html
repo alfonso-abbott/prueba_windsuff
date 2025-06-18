@@ -13,6 +13,7 @@
         <div class="task-form">
             <input type="text" id="taskInput" placeholder="Escribe tu tarea...">
             <button id="addTask">Agregar Tarea</button>
+            <button id="toggleTheme" title="Cambiar tema">Tema</button>
         </div>
 
         <div class="filters">
@@ -23,11 +24,15 @@
 
         <div class="tasks-container">
             <ul id="tasksList"></ul>
+            <p id="noTasks" class="hidden">No hay tareas para mostrar</p>
         </div>
 
         <div class="stats">
             <p>Tareas totales: <span id="totalTasks">0</span></p>
-            <p>Tareas pendientes: <span id="pendingTasks">0</span></p>
+            <p>Tareas completadas: <span id="completedTasks">0</span></p>
+        </div>
+        <div class="actions">
+            <button id="clearCompleted">Borrar completadas</button>
         </div>
     </div>
     <script src="script.js"></script>
