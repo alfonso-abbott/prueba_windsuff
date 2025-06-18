@@ -86,6 +86,15 @@ button:hover {
     background: #f8f9fa;
     margin-bottom: 0.5rem;
     border-radius: 5px;
+    transition: background 0.3s, transform 0.3s;
+}
+
+.task-item:hover {
+    transform: translateX(5px);
+}
+
+.task-item.editing {
+    background: #fff3cd;
 }
 
 .task-item.completed {
@@ -169,12 +178,30 @@ body.dark .task-item.completed {
     to { opacity: 0; height: 0; margin: 0; padding: 0; }
 }
 
+@keyframes slideIn {
+    from { transform: translateY(-10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideOut {
+    from { transform: translateY(0); opacity: 1; height: auto; }
+    to { transform: translateY(10px); opacity: 0; height: 0; margin: 0; padding: 0; }
+}
+
 .fade-in {
     animation: fadeIn 0.3s ease forwards;
 }
 
 .fade-out {
     animation: fadeOut 0.3s ease forwards;
+}
+
+.slide-in {
+    animation: slideIn 0.4s ease forwards;
+}
+
+.slide-out {
+    animation: slideOut 0.4s ease forwards;
 }
 
 @media (max-width: 600px) {

@@ -36,10 +36,11 @@ document.addEventListener('DOMContentLoaded', () => {
         completedTasks.textContent = completed;
     }
 
-    function startEdit(span, index) {
+    function startEdit(span, index, li) {
         const input = document.createElement('input');
         input.type = 'text';
         input.value = tasks[index].text;
+        li.classList.add('editing');
         span.replaceWith(input);
         input.focus();
 
@@ -50,6 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             span.textContent = tasks[index].text;
             input.replaceWith(span);
+            li.classList.remove('editing');
             saveTasks();
             renderTasks(currentFilter);
         };
@@ -98,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
             li.appendChild(editBtn);
             li.appendChild(deleteBtn);
             tasksList.appendChild(li);
-            li.classList.add('fade-in');
+            li.classList.add('slide-in');
 
             checkbox.addEventListener('change', (e) => {
                 tasks[index].completed = e.target.checked;
@@ -109,18 +111,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
             deleteBtn.addEventListener('click', () => {
                 if (confirm('¿Eliminar esta tarea?')) {
-                    li.classList.add('fade-out');
+                    li.classList.add('slide-out');
                     setTimeout(() => {
                         tasks.splice(index, 1);
                         saveTasks();
                         renderTasks(filter);
                         updateStats();
-                    }, 300);
+                    }, 400);
                 }
             });
 
-            editBtn.addEventListener('click', () => startEdit(span, index));
-            span.addEventListener('dblclick', () => startEdit(span, index));
+            editBtn.addEventListener('click', () => startEdit(span, index, li));
+            span.addEventListener('dblclick', () => startEdit(span, index, li));
         });
     }
 
@@ -179,10 +181,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     clearCompletedBtn.addEventListener('click', () => {
         if (confirm('¿Eliminar todas las tareas completadas?')) {
-            tasks = tasks.filter(task => !task.completed);
-            saveTasks();
-            renderTasks(currentFilter);
-            updateStats();
+            const items = document.querySelectorAll('.task-item.completed');
+            items.forEach(li => li.classList.add('slide-out'));
+            setTimeout(() => {
+                tasks = tasks.filter(task => !task.completed);
+                saveTasks();
+                renderTasks(currentFilter);
+                updateStats();
+            }, 400);
         }
     });
 
