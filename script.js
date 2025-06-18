@@ -4,10 +4,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const tasksList = document.getElementById('tasksList');
     const filterButtons = document.querySelectorAll('.filter-btn');
     const totalTasks = document.getElementById('totalTasks');
-    const pendingTasks = document.getElementById('pendingTasks');
+    const completedTasks = document.getElementById('completedTasks');
+    const clearCompletedBtn = document.getElementById('clearCompleted');
+    const toggleTheme = document.getElementById('toggleTheme');
+    const noTasksMsg = document.getElementById('noTasks');
 
     let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
     let currentFilter = localStorage.getItem('filter') || 'all';
+    let theme = localStorage.getItem('theme') || 'light';
+
+    if (theme === 'dark') {
+        document.body.classList.add('dark');
+    }
 
     function saveTasks() {
         localStorage.setItem('tasks', JSON.stringify(tasks));
@@ -17,11 +25,15 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('filter', currentFilter);
     }
 
+    function saveTheme() {
+        localStorage.setItem('theme', theme);
+    }
+
     function updateStats() {
         const total = tasks.length;
-        const pending = tasks.filter(task => !task.completed).length;
+        const completed = tasks.filter(task => task.completed).length;
         totalTasks.textContent = total;
-        pendingTasks.textContent = pending;
+        completedTasks.textContent = completed;
     }
 
     function startEdit(span, index) {
@@ -56,6 +68,12 @@ document.addEventListener('DOMContentLoaded', () => {
             ? tasks
             : tasks.filter(task => task.completed === (filter === 'completed'));
 
+        noTasksMsg.classList.add('hidden');
+        if (filteredTasks.length === 0) {
+            noTasksMsg.classList.remove('hidden');
+            return;
+        }
+
         filteredTasks.forEach((task, index) => {
             const li = document.createElement('li');
             li.className = `task-item ${task.completed ? 'completed' : ''}`;
@@ -80,6 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
             li.appendChild(editBtn);
             li.appendChild(deleteBtn);
             tasksList.appendChild(li);
+            li.classList.add('fade-in');
 
             checkbox.addEventListener('change', (e) => {
                 tasks[index].completed = e.target.checked;
@@ -89,10 +108,15 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             deleteBtn.addEventListener('click', () => {
-                tasks.splice(index, 1);
-                saveTasks();
-                renderTasks(filter);
-                updateStats();
+                if (confirm('¿Eliminar esta tarea?')) {
+                    li.classList.add('fade-out');
+                    setTimeout(() => {
+                        tasks.splice(index, 1);
+                        saveTasks();
+                        renderTasks(filter);
+                        updateStats();
+                    }, 300);
+                }
             });
 
             editBtn.addEventListener('click', () => startEdit(span, index));
@@ -101,6 +125,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function addTask(text) {
+        if (tasks.some(t => t.text.toLowerCase() === text.toLowerCase())) {
+            alert('La tarea ya existe');
+            return;
+        }
+
         tasks.push({
             text,
             completed: false
@@ -139,6 +168,21 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.classList.add('active');
         } else {
             btn.classList.remove('active');
+        }
+    });
+
+    toggleTheme.addEventListener('click', () => {
+        document.body.classList.toggle('dark');
+        theme = document.body.classList.contains('dark') ? 'dark' : 'light';
+        saveTheme();
+    });
+
+    clearCompletedBtn.addEventListener('click', () => {
+        if (confirm('¿Eliminar todas las tareas completadas?')) {
+            tasks = tasks.filter(task => !task.completed);
+            saveTasks();
+            renderTasks(currentFilter);
+            updateStats();
         }
     });
 
