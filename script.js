@@ -1,15 +1,18 @@
 document.addEventListener('DOMContentLoaded', () => {
     const taskInput = document.getElementById('taskInput');
     const addTaskButton = document.getElementById('addTask');
+    const descInput = document.getElementById('descInput');
     const tasksList = document.getElementById('tasksList');
     const filterButtons = document.querySelectorAll('.filter-btn');
     const totalTasks = document.getElementById('totalTasks');
     const completedTasks = document.getElementById('completedTasks');
     const clearCompletedBtn = document.getElementById('clearCompleted');
+    const exportExcelBtn = document.getElementById('exportExcel');
     const toggleTheme = document.getElementById('toggleTheme');
     const noTasksMsg = document.getElementById('noTasks');
 
     let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    let nextId = parseInt(localStorage.getItem('nextId')) || (tasks.reduce((m, t) => Math.max(m, t.id || 0), 0) + 1);
     let currentFilter = localStorage.getItem('filter') || 'all';
     let theme = localStorage.getItem('theme') || 'light';
 
@@ -19,6 +22,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function saveTasks() {
         localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+
+    function saveNextId() {
+        localStorage.setItem('nextId', nextId);
     }
 
     function saveFilter() {
@@ -49,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (newText) {
                 tasks[index].text = newText;
             }
-            span.textContent = tasks[index].text;
+            span.textContent = `${tasks[index].id}. ${tasks[index].text}`;
             input.replaceWith(span);
             li.classList.remove('editing');
             saveTasks();
@@ -84,8 +91,19 @@ document.addEventListener('DOMContentLoaded', () => {
             checkbox.type = 'checkbox';
             checkbox.checked = task.completed;
 
+            const textWrap = document.createElement('div');
+            textWrap.className = 'task-text';
+
             const span = document.createElement('span');
-            span.textContent = task.text;
+            span.textContent = `${task.id}. ${task.text}`;
+            textWrap.appendChild(span);
+
+            if (task.desc) {
+                const descEl = document.createElement('small');
+                descEl.textContent = task.desc;
+                descEl.className = 'description';
+                textWrap.appendChild(descEl);
+            }
 
             const editBtn = document.createElement('button');
             editBtn.textContent = 'Editar';
@@ -96,9 +114,9 @@ document.addEventListener('DOMContentLoaded', () => {
             deleteBtn.className = 'delete';
 
             li.appendChild(checkbox);
-            li.appendChild(span);
-            li.appendChild(editBtn);
+            li.appendChild(textWrap);
             li.appendChild(deleteBtn);
+            li.appendChild(editBtn);
             tasksList.appendChild(li);
             li.classList.add('slide-in');
 
@@ -126,17 +144,21 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function addTask(text) {
+    function addTask(text, desc) {
         if (tasks.some(t => t.text.toLowerCase() === text.toLowerCase())) {
             alert('La tarea ya existe');
             return;
         }
 
         tasks.push({
+            id: nextId++,
             text,
+            desc,
             completed: false
         });
         taskInput.value = '';
+        descInput.value = '';
+        saveNextId();
         saveTasks();
         renderTasks(currentFilter);
         updateStats();
@@ -144,12 +166,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     addTaskButton.addEventListener('click', () => {
         const taskText = taskInput.value.trim();
+        const descText = descInput.value.trim();
         if (taskText) {
-            addTask(taskText);
+            addTask(taskText, descText);
         }
     });
 
     taskInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            addTaskButton.click();
+        }
+    });
+
+    descInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             addTaskButton.click();
         }
@@ -190,6 +219,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateStats();
             }, 400);
         }
+    });
+
+    exportExcelBtn.addEventListener('click', () => {
+        const data = tasks.map(t => ({
+            ID: t.id,
+            Tarea: t.text,
+            Descripcion: t.desc || '',
+            Completada: t.completed ? 'Si' : 'No'
+        }));
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Tareas');
+        XLSX.writeFile(wb, 'tareas.xlsx');
     });
 
     renderTasks(currentFilter);
