@@ -11,7 +11,8 @@
         <h1>Gestor de Tareas</h1>
         
         <div class="task-form">
-            <input type="text" id="taskInput" placeholder="Escribe tu tarea...">
+            <input type="text" id="taskInput" placeholder="Tarea...">
+            <input type="text" id="descInput" placeholder="Descripci&oacute;n...">
             <button id="addTask">Agregar Tarea</button>
             <button id="toggleTheme" title="Cambiar tema">Tema</button>
         </div>
@@ -33,8 +34,10 @@
         </div>
         <div class="actions">
             <button id="clearCompleted">Borrar completadas</button>
+            <button id="exportExcel">Exportar Excel</button>
         </div>
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
